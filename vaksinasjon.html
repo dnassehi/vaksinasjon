@@ -77,7 +77,9 @@
     .choices{ display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 6px 0 8px; }
     .choice{ border:1px solid var(--border); border-radius:12px; padding:12px; position:relative; background:#f9fafb; }
     .choice.selected{ border:2px solid var(--accent); background:#dbeafe; }
+    .choice.disabled{ background:#f3f4f6; border-color:#d1d5db; }
     .choice input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .choice.disabled input{ cursor:not-allowed; }
     .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; }
 
     .box{
@@ -277,23 +279,8 @@
       `;
       setProgress(2, totalStepsAhead());
       document.getElementById('yes').onclick = () => { state.allergy = true; renderResult(); };
-      document.getElementById('no').onclick  = () => { state.allergy = false; renderAge65(); };
+      document.getElementById('no').onclick  = () => { state.allergy = false; renderAge75(); };
       push(renderAllergy);
-    }
-
-    function renderAge65(){
-      view.innerHTML = `
-        <div class="pill info">👤 Alder</div>
-        <div class="q">Er pasienten 65 år eller eldre?</div>
-        <div class="btns">
-          <button class="yes" id="yes">Ja</button>
-          <button class="no" id="no">Nei</button>
-        </div>
-      `;
-      setProgress(3, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.age65plus = true; renderAge75(); };
-      document.getElementById('no').onclick  = () => { state.age65plus = false; renderRisks(); };
-      push(renderAge65);
     }
 
     function renderAge75(){
@@ -305,11 +292,36 @@
           <button class="no" id="no">Nei</button>
         </div>
       `;
-      setProgress(4, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.age75plus = true; renderBorn1960(); };
-      document.getElementById('no').onclick  = () => { state.age75plus = false; renderBorn1960(); };
+      setProgress(3, totalStepsAhead());
+      document.getElementById('yes').onclick = () => { 
+        state.age75plus = true; 
+        state.age65plus = true; // Hvis 75+, så er de også 65+
+        state.born1960 = false; // Hvis 75+ i 2024, kan de ikke være født i 1960
+        renderResult(); 
+      };
+      document.getElementById('no').onclick  = () => { 
+        state.age75plus = false; 
+        renderAge65(); 
+      };
       push(renderAge75);
     }
+
+    function renderAge65(){
+      view.innerHTML = `
+        <div class="pill info">👤 Alder</div>
+        <div class="q">Er pasienten 65 år eller eldre?</div>
+        <div class="btns">
+          <button class="yes" id="yes">Ja</button>
+          <button class="no" id="no">Nei</button>
+        </div>
+      `;
+      setProgress(4, totalStepsAhead());
+      document.getElementById('yes').onclick = () => { state.age65plus = true; renderRisks65plus(); };
+      document.getElementById('no').onclick  = () => { state.age65plus = false; renderRisks(); };
+      push(renderAge65);
+    }
+
+
 
     function renderBorn1960(){
       view.innerHTML = `
@@ -320,7 +332,7 @@
           <button class="no" id="no">Nei</button>
         </div>
       `;
-      setProgress(5, totalStepsAhead());
+      setProgress(6, totalStepsAhead());
       document.getElementById('yes').onclick = () => { state.born1960 = true; renderPneumo12m(); };
       document.getElementById('no').onclick  = () => { state.born1960 = false; renderResult(); };
       push(renderBorn1960);
@@ -328,23 +340,23 @@
 
     function renderPneumo12m(){
       view.innerHTML = `
-        <div class="pill info">🦠 Pneumokokkvaksine (PPV23)</div>
-        <div class="q">Har pasienten fått Pneumovax (PPV23) de siste 12 månedene?</div>
+        <div class="pill info">🦠 Pneumokokkvaksine</div>
+        <div class="q">Har pasienten fått pneumokokkvaksine de siste 12 månedene?</div>
         <div class="hint">Dersom vaksinert &lt; 12 mnd siden, vent til det er gått minst 12 måneder.</div>
         <div class="btns">
           <button class="no" id="noRecent">Nei / ikke fått / &gt; 12 mnd</button>
           <button class="yes" id="yesRecent">Ja, siste 12 mnd</button>
         </div>
         <div class="box" style="margin-top:10px">
-          <div class="hint" style="margin-bottom:6px;">Alternativt: Oppgi dato for siste Pneumovax-dose (valgfritt)</div>
+          <div class="hint" style="margin-bottom:6px;">Alternativt: Oppgi dato for siste pneumokokkvaksine-dose (valgfritt)</div>
           <div class="row">
-            <input id="pneumoDate" type="date" aria-label="Dato for siste Pneumovax" />
+            <input id="pneumoDate" type="date" aria-label="Dato for siste pneumokokkvaksine" />
             <button class="ghost" id="calcBtn">Beregn</button>
           </div>
           <div id="calcOut" class="hint mono" style="margin-top:6px;"></div>
         </div>
       `;
-      setProgress(6, totalStepsAhead());
+      setProgress(7, totalStepsAhead());
       document.getElementById('noRecent').onclick  = () => { state.pneumovaxRecent = false; state.pneumovaxDate = null; renderResult(); };
       document.getElementById('yesRecent').onclick = () => { state.pneumovaxRecent = true;  renderResult(); };
 
@@ -360,6 +372,59 @@
           : `Det er < 12 mnd (${months} mnd). Vent ca. ${daysToGo} dager til 12 mnd er passert.`;
       };
       push(renderPneumo12m);
+    }
+
+    function renderRisks65plus(){
+      const selected = new Set(state.risks);
+      view.innerHTML = `
+        <div class="pill info">🩺 Risikofaktorer (65+ år)</div>
+        <div class="q">Har pasienten en eller flere av følgende risikofaktorer?</div>
+        <div class="hint">Alle 65+ tilbys influensavaksine. Risikofaktorer avgjør om covid-19-vaksine anbefales.</div>
+        <div class="choices" id="choices"></div>
+        <div class="row">
+          <button class="ghost" id="noneBtn">Ingen av disse</button>
+          <button class="primary" id="contBtn">Fortsett</button>
+        </div>
+      `;
+      setProgress(5, totalStepsAhead());
+      const box = document.getElementById('choices');
+      RISK_OPTIONS.forEach(opt => {
+        const div = document.createElement('div');
+        const isGravid = opt.key === 'preg1' || opt.key === 'preg2';
+        const isDisabled = isGravid;
+        div.className = 'choice' + (selected.has(opt.key) ? ' selected':'') + (isDisabled ? ' disabled':'');
+        div.innerHTML = `<span style="${isDisabled ? 'opacity: 0.5;' : ''}">${opt.label}</span>`;
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = selected.has(opt.key);
+        input.disabled = isDisabled;
+        if (!isDisabled) {
+          input.addEventListener('change', () => {
+            if (input.checked) { selected.add(opt.key); div.classList.add('selected'); }
+            else { selected.delete(opt.key); div.classList.remove('selected'); }
+          });
+        }
+        div.appendChild(input);
+        box.appendChild(div);
+      });
+
+      document.getElementById('noneBtn').onclick = () => { 
+        state.risks = []; 
+        if (state.age75plus === true) {
+          renderResult(); // 75+ kan ikke være født i 1960
+        } else {
+          renderBorn1960(); 
+        }
+      };
+      document.getElementById('contBtn').onclick = () => { 
+        state.risks = Array.from(selected); 
+        if (state.age75plus === true) {
+          renderResult(); // 75+ kan ikke være født i 1960
+        } else {
+          renderBorn1960(); 
+        }
+      };
+      push(renderRisks65plus);
     }
 
     function renderRisks(){
@@ -464,46 +529,56 @@
 
       // ≥ 65 år
       if (state.age65plus === true) {
-        // Influensa
+        // Influensa - ALLE 65+ tilbys
         r.offer.push('Influensavaksine');
 
-        // Covid-19
+        // Covid-19 - basert på alder og risikofaktorer
         if (state.age75plus === true) {
           r.offer.push('Covid-19-vaksine');
           r.notes.push('≥ 75 år: bør ta covid-19-vaksine.');
+        } else if (state.risks && state.risks.length > 0) {
+          r.offer.push('Covid-19-vaksine');
+          r.notes.push('65–74 år med risikofaktorer: anbefales covid-19-vaksine.');
         } else {
           r.consider.push('Covid-19-vaksine');
-          r.notes.push('65–74 år: friske kan selv vurdere covid-19-vaksine.');
+          r.notes.push('65–74 år uten risikofaktorer: friske kan selv vurdere covid-19-vaksine.');
         }
 
-        // Pneumokokk – KUN født i 1960 og ikke nylig Pneumovax
-        if (state.born1960 === true) {
-          if (state.pneumovaxRecent === true) {
-            r.notes.push('Pneumokokkvaksine (PPV23): siste dose < 12 mnd. Vent til det er gått minst 12 måneder.');
-          } else if (state.pneumovaxRecent === false) {
-            r.offer.push('Pneumokokkvaksine (PPV23) – født i 1960');
-          } else {
-            r.notes.push('Vurder pneumokokkvaksine (PPV23) – født i 1960. Avklar om siste dose var for ≥ 12 mnd siden.');
-          }
-        }
+                 // Pneumokokk – KUN født i 1960 og ikke nylig pneumokokkvaksine
+         if (state.born1960 === true) {
+           if (state.pneumovaxRecent === true) {
+             r.notes.push('Pneumokokkvaksine (PKV13): siste dose < 12 mnd. Vent til det er gått minst 12 måneder.');
+           } else if (state.pneumovaxRecent === false) {
+             r.offer.push('Pneumokokkvaksine (PKV13) – født i 1960');
+           } else {
+             r.notes.push('Vurder pneumokokkvaksine (PKV13) – født i 1960. Avklar om siste dose var for ≥ 12 mnd siden.');
+           }
+         }
         return r;
       }
 
-      // < 65 år
-      if (state.age65plus === false) {
-        const risks = state.risks || [];
-        const hasPreg1 = risks.includes('preg1');
-        const hasOtherRisk = risks.some(k => k !== 'preg1');
+                    // < 65 år
+        if (state.age65plus === false) {
+          const risks = state.risks || [];
+          const hasPreg1 = risks.includes('preg1');
+          const hasPreg2 = risks.includes('preg2');
+          const hasOtherRisk = risks.some(k => k !== 'preg1' && k !== 'preg2');
 
-        if (risks.includes('preg2') || (!hasPreg1 && hasOtherRisk) || (hasPreg1 && hasOtherRisk)) {
-          r.offer.push('Influensavaksine', 'Covid-19-vaksine');
-          if (hasPreg1 && hasOtherRisk) r.notes.push('Gravid 1. trimester + annen risikofaktor: vaksinasjon kan gis.');
-        } else if (hasPreg1 && !hasOtherRisk) {
-          r.notes.push('Gravid 1. trimester uten andre risikofaktorer: vaksine anbefales ikke nå.');
-        } else if (risks.length === 0) {
-          r.notes.push('Ingen vaksine i Nasjonalt vaksinasjonsprogram basert på opplysningene.');
+          if (hasPreg1 || hasPreg2 || hasOtherRisk) {
+            // Alle risikofaktorer får influensavaksine
+            r.offer.push('Influensavaksine');
+            
+            // Covid-19-vaksine for:
+            // - 2./3. trimester
+            // - Andre risikofaktorer (ikke graviditet)
+            // - 1. trimester + andre risikofaktorer
+            if (hasPreg2 || hasOtherRisk || (hasPreg1 && hasOtherRisk)) {
+              r.offer.push('Covid-19-vaksine');
+            }
+          } else if (risks.length === 0) {
+            r.notes.push('Ingen vaksine i Nasjonalt vaksinasjonsprogram basert på opplysningene.');
+          }
         }
-      }
 
       return r;
     }
@@ -554,8 +629,8 @@
         `Alder ≥65: ${yn(state.age65plus)}`,
         `Alder ≥75: ${yn(state.age75plus)}`,
         `Født i 1960: ${yn(state.born1960)}`,
-        `Pneumovax siste 12 mnd: ${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei/≥12 mnd'}`,
-        `Dato siste Pneumovax (oppgitt): ${state.pneumovaxDate ?? '—'}`,
+                 `Pneumokokkvaksine siste 12 mnd: ${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei/≥12 mnd'}`,
+         `Dato siste pneumokokkvaksine (oppgitt): ${state.pneumovaxDate ?? '—'}`,
         `Risikofaktorer (<65): ${risksPretty}`,
         `Tilby: ${r.offer.join(', ') || '—'}`,
         `Vurder: ${r.consider.join(', ') || '—'}`,
@@ -576,15 +651,15 @@
               <tr><th>Alder ≥65 år</th><td>${yn(state.age65plus)}</td></tr>
               <tr><th>Alder ≥75 år</th><td>${yn(state.age75plus)}</td></tr>
               <tr><th>Født i 1960</th><td>${yn(state.born1960)}</td></tr>
-              <tr><th>Pneumovax siste 12 mnd</th><td>${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei / ≥12 mnd'}</td></tr>
-              <tr><th>Siste Pneumovax-dato</th><td>${state.pneumovaxDate ?? '—'}</td></tr>
-              <tr><th>Vurdering av 12 mnd-regel</th><td>${pneumoInfo}</td></tr>
+                             <tr><th>Pneumokokkvaksine siste 12 mnd</th><td>${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei / ≥12 mnd'}</td></tr>
+               <tr><th>Siste pneumokokkvaksine-dato</th><td>${state.pneumovaxDate ?? '—'}</td></tr>
+               <tr><th>Vurdering av 12 mnd-regel</th><td>${pneumoInfo}</td></tr>
               <tr><th>Risikofaktorer (<65 år)</th><td>${risksPretty}</td></tr>
               <tr><th><strong>Tilby i dag</strong></th><td><strong>${r.offer.join(' · ') || '—'}</strong></td></tr>
               <tr><th>Vurder</th><td>${r.consider.join(' · ') || '—'}</td></tr>
               <tr><th>Merknader</th><td>${r.notes.join(' · ') || '—'}</td></tr>
             </table>
-            <div class="muted" style="margin-top:6px;">Pneumokokkvaksine (PPV23) i denne veilederen: kun for født i 1960, og først når ≥ 12 mnd siden forrige Pneumovax-dose.</div>
+                         <div class="muted" style="margin-top:6px;">Pneumokokkvaksine (PKV13/Prevenar 13) i denne veilederen: kun for født i 1960, og først når ≥ 12 mnd siden forrige pneumokokkvaksine-dose.</div>
             <textarea id="summaryText" class="mono" style="width:100%; margin-top:8px; height:140px;">${summaryText}</textarea>
           </div>
 
