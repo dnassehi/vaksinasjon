@@ -1,604 +1,100 @@
-<!DOCTYPE html>
-<html lang="no">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vaksine Veileder – Voksne (Influensa · Covid-19 · Pneumokokk)</title>
-  <style>
-    :root{
-      /* Lys, høy-kontrast palett */
-      --bg: #f5f7fa;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #4b5563;
-      --border: #e5e7eb;
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Apper laget av Damoun Nassehi</title>
+    <meta name="description" content="Oversikt over apper laget av Damoun Nassehi med lenker til hver app." />
+    <meta name="color-scheme" content="light" />
+    <style>
+      :root {
+        /* Lys blå palett basert på #bfdbfe og #93c5fd */
+        --bg: #f9fbff;          /* very light background */
+        --fg: #0f172a;          /* dark slate text */
+        --muted: #475569;       /* muted text */
+        --brand: #93c5fd;       /* primary light blue */
+        --brand-2: #bfdbfe;     /* secondary light blue */
+        --card-bg: #ffffff;     /* card background */
+        --card-border: #dbeafe; /* soft border */
+      }
 
-      --accent: #1d4ed8;
-      --accent-2: #3b82f6;
+      }
 
-      --ok: #15803d;
-      --ok-soft: #dcfce7;
+      * { box-sizing: border-box; }
+      body {
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        background:
+          radial-gradient(40vw 20vh at 10% -10%, rgba(191,219,254,0.35), transparent 70%),
+          radial-gradient(45vw 25vh at 110% 0%, rgba(147,197,253,0.3), transparent 70%),
+          linear-gradient(180deg, var(--bg) 0%, #ffffff 100%);
+        color: var(--fg);
+      }
 
-      --danger: #b91c1c;
-      --danger-soft: #fee2e2;
+      .wrap { max-width: 820px; margin: 0 auto; padding: 2.25rem; }
 
-      --warn: #b45309;
-      --warn-soft: #ffedd5;
+      header { text-align: center; margin-bottom: 2rem; }
 
-      --info-soft: #dbeafe;
-    }
-    * { box-sizing: border-box }
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--text);
-      background: var(--bg);
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      padding: 20px;
-    }
-    .app{ width:min(920px, 100%); }
-    header{ text-align:center; margin-bottom:16px; }
-    .title{
-      font-weight:800;
-      font-size: clamp(22px, 4.2vw, 34px);
-      color: var(--accent);
-    }
-    .subtitle{ color:var(--muted); font-size:14px; margin-top:6px; }
-    .card{
-      background: var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding: clamp(16px, 3vw, 28px);
-      box-shadow: 0 4px 22px rgba(0,0,0,.06);
-    }
-    .progress{ height:10px; background: #eef2f7; border-radius:999px; overflow:hidden; margin-bottom:16px; }
-    .bar{ height:100%; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .35s ease; }
-    .q{ font-size: 20px; font-weight:700; margin: 6px 0 12px; }
-    .hint{ color:var(--muted); font-size: 13px; margin-bottom: 12px; }
-    .btns{ display:flex; gap:10px; flex-wrap:wrap; }
-    button{
-      border:0; cursor:pointer; padding:12px 16px; border-radius:12px; font-weight:700; transition: filter .2s ease;
-    }
-    button:focus{ outline: 3px solid #93c5fd; outline-offset: 2px; }
-    .yes{ background: var(--ok); color:white; }
-    .no{ background: var(--danger); color:white; }
-    .primary{ background: var(--accent); color:white; }
-    .ghost{ background: #f3f4f6; color:var(--text); }
-    .pill{
-      display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:14px;
-    }
-    .pill.ok{ background: var(--ok-soft); color: var(--ok); border:1px solid #86efac; }
-    .pill.danger{ background: var(--danger-soft); color: var(--danger); border:1px solid #fecaca; }
-    .pill.warn{ background: var(--warn-soft); color: var(--warn); border:1px solid #fed7aa; }
-    .pill.info{ background: var(--info-soft); color: var(--accent); border:1px solid #bfdbfe; }
+      h1 { font-size: 2.125rem; margin: 0; color: var(--brand); letter-spacing: -0.01em; }
 
-    .choices{ display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 6px 0 8px; }
-    .choice{ border:1px solid var(--border); border-radius:12px; padding:12px; position:relative; background:#f9fafb; }
-    .choice.selected{ border:2px solid var(--accent); background:#dbeafe; }
-    .choice input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+      p.lead { margin-top: 0.5rem; color: var(--muted); }
 
-    .box{
-      border:1px solid var(--border); border-radius:12px; padding:12px; background:#f9fafb;
-    }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .grid { display: grid; grid-template-columns: 1fr; gap: 1.75rem; }
 
-    .result{ display:grid; gap:14px; }
-    .list{ margin:0; padding-left:18px }
-    .muted{ color:var(--muted) }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: transform .15s ease, border-color .15s ease;
+      }
 
-    .summary{
-      border:1px solid var(--border);
-      border-radius:12px;
-      background:#fff;
-      padding:12px;
-    }
-    .summary h3{
-      margin:0 0 8px 0;
-      font-size:16px;
-    }
-    .summary table{
-      width:100%;
-      border-collapse: collapse;
-      font-size:14px;
-    }
-    .summary th, .summary td{
-      text-align:left;
-      padding:8px 10px;
-      border-bottom:1px solid #eef2f7;
-    }
-    .summary tr:last-child th, .summary tr:last-child td{ border-bottom:0; }
+      .card:hover { transform: none; border-color: var(--card-border); }
 
-    footer{
-      margin-top:14px; text-align:center; color:var(--muted); font-size:12px;
-    }
-    a{ color:var(--accent) }
-    .kilder{
-      margin-top:10px;
-      display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
-    }
-    .kilder a{
-      padding:8px 12px; border-radius:10px; background: #f3f4f6;
-      border:1px solid var(--border); font-weight:600; font-size:12px; text-decoration:none;
-    }
+      .card h2 { margin: 0 0 0.5rem; font-size: 1.2rem; font-weight: 600; color: var(--brand); }
 
-    @media print {
-      body{ background:white; color:black; }
-      .card{ background:white; border:1px solid #ddd; box-shadow:none; }
-      .progress, button, .kilder a{ display:none !important }
-      .title{ color:black }
-      .subtitle, .muted{ color:#333 }
-      .summary{ page-break-inside: avoid; }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <header>
-      <div class="title">Vaksine Veileder · Voksne</div>
-      <div class="subtitle">Influensa · Covid-19 · Pneumokokk — i tråd med FHI (Nasjonalt vaksinasjonsprogram)</div>
-    </header>
+      .card p { margin: 0 0 1rem; color: var(--muted); }
 
-    <div class="card">
-      <div class="progress" aria-hidden="true"><div id="bar" class="bar"></div></div>
+      a { text-decoration: none; color: inherit; }
 
-      <div id="view"></div>
+      footer { margin-top: 2rem; text-align: center; color: var(--muted); font-size: 0.875rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Apper laget av Damoun Nassehi</h1>
+        <p class="lead">En oversikt over nett‑apper jeg har laget.</p>
+      </header>
 
-      <div class="row">
-        <button class="ghost" id="backBtn" aria-label="Tilbake">⟵ Tilbake</button>
-        <button class="ghost" id="resetBtn" aria-label="Nullstill">↺ Nullstill</button>
-        <button class="primary" id="printBtn" aria-label="Skriv ut">🖨️ Skriv ut</button>
-        <button class="ghost" id="copyBtn" aria-label="Kopier oppsummering">📋 Kopier oppsummering</button>
-      </div>
+      <main class="grid">
+        <a href="https://nassehi.no/vaksinasjon.html" target="_blank" rel="noopener noreferrer">
+          <article class="card">
+            <h2>Vaksinasjon</h2>
+            <p>Et lite nettverktøy relatert til vaksinasjon.</p>
+          </article>
+        </a>
+
+        <a href="https://www.sokrates.chat/" target="_blank" rel="noopener noreferrer">
+          <article class="card">
+            <h2>Sokrates Chat</h2>
+            <p>En samtale‑ og refleksjonstjeneste.</p>
+          </article>
+        </a>
+      </main>
+
+      <footer>
+        © <span id="year"></span> Damoun Nassehi
+      </footer>
     </div>
 
-    <footer>
-      <div class="muted">Beslutningsstøtte – erstatter ikke medisinsk vurdering. Ved feber eller alvorlig allergi: ikke vaksiner i dag.</div>
-      <div class="kilder">
-        <a href="https://www.fhi.no/nettpub/vaksinasjonsveilederen-for-helsepersonell/" target="_blank" rel="noreferrer">FHI · Vaksinasjonsveilederen</a>
-        <a href="https://www.fhi.no/sv/vaksine/" target="_blank" rel="noreferrer">FHI · Vaksiner i Norge</a>
-        <a href="https://www.felleskatalogen.no/" target="_blank" rel="noreferrer">Felleskatalogen</a>
-      </div>
-    </footer>
-  </div>
-
-  <script>
-    // --- STATE ---
-    const state = {
-      fever: null,            // true/false
-      allergy: null,          // true/false (alvorlig vaksineallergi)
-      age65plus: null,        // true/false
-      age75plus: null,        // true/false
-      born1960: null,         // true/false (eksakt 1960)
-      pneumovaxRecent: null,  // true/false/null (siste 12 mnd)
-      pneumovaxDate: null,    // string YYYY-MM-DD
-      risks: []               // array of risk keys
-    };
-
-    // Risikofaktorer (<65 år)
-    const RISK_OPTIONS = [
-      {key:'preg1', label:'Gravid (1. trimester, uke < 12)'},
-      {key:'preg2', label:'Gravid (2.–3. trimester, uke ≥ 12)'},
-      {key:'prem_child', label:'Forelder/omsorg for prematurt barn (6 mnd – 5 år)'},
-      {key:'lung', label:'KOLS, astma eller annen kronisk lungesykdom'},
-      {key:'heart', label:'Hjertesykdom (annet enn isolert hypertensjon)'},
-      {key:'diabetes', label:'Diabetes mellitus (type 1 eller 2)'},
-      {key:'liver', label:'Leversvikt'},
-      {key:'kidney', label:'Nyresvikt'},
-      {key:'neuro', label:'Kronisk nevrologisk sykdom (med nedsatt lungekapasitet)'},
-      {key:'immuno', label:'Nedsatt immunforsvar (transplantasjon, kreft, HIV, immundempende behandling)'},
-      {key:'obesity', label:'Svært alvorlig fedme (KMI > 40)'},
-      {key:'other', label:'Annen alvorlig/kronisk sykdom (legevurdering)'}
-    ];
-    const RISK_LABEL = Object.fromEntries(RISK_OPTIONS.map(o => [o.key, o.label]));
-
-    // --- ELEMENTS ---
-    const view = document.getElementById('view');
-    const bar  = document.getElementById('bar');
-    const backBtn = document.getElementById('backBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const printBtn = document.getElementById('printBtn');
-    const copyBtn = document.getElementById('copyBtn');
-
-    let history = []; // stack av render-funksjoner for "Tilbake"
-
-    backBtn.addEventListener('click', () => {
-      if (history.length > 1) {
-        history.pop(); // kast current
-        const prev = history.pop(); // hent forrige
-        prev(); // re-render
-      }
-    });
-    resetBtn.addEventListener('click', resetAll);
-    printBtn.addEventListener('click', () => window.print());
-    copyBtn.addEventListener('click', copySummaryToClipboard);
-
-    function resetAll(){
-      state.fever = null;
-      state.allergy = null;
-      state.age65plus = null;
-      state.age75plus = null;
-      state.born1960 = null;
-      state.pneumovaxRecent = null;
-      state.pneumovaxDate = null;
-      state.risks = [];
-      history = [];
-      renderIntro();
-    }
-
-    function setProgress(stepIndex, totalSteps){
-      const pct = Math.round((stepIndex/Math.max(totalSteps,1))*100);
-      bar.style.width = pct + '%';
-      bar.setAttribute('aria-valuenow', String(pct));
-    }
-
-    function push(renderFn){ history.push(renderFn); }
-
-    // --- VIEWS ---
-    function renderIntro(){
-      view.innerHTML = `
-        <div class="q">Start veiledning</div>
-        <div class="hint">Svar på trinnene nedenfor for å få anbefaling for influensa-, covid- og pneumokokkvaksine.</div>
-        <div class="btns">
-          <button class="primary" id="startBtn">Start ▶</button>
-        </div>
-      `;
-      setProgress(0, 7);
-      document.getElementById('startBtn').onclick = () => renderFever();
-      push(renderIntro);
-    }
-
-    function renderFever(){
-      view.innerHTML = `
-        <div class="pill danger">🌡️ Feber / akutt sykdom</div>
-        <div class="q">Har pasienten feber i dag (&gt; 38°C)?</div>
-        <div class="btns">
-          <button class="yes" id="yes">Ja</button>
-          <button class="no" id="no">Nei</button>
-        </div>
-      `;
-      setProgress(1, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.fever = true; renderResult(); };
-      document.getElementById('no').onclick  = () => { state.fever = false; renderAllergy(); };
-      push(renderFever);
-    }
-
-    function renderAllergy(){
-      view.innerHTML = `
-        <div class="pill warn">⚠️ Allergi</div>
-        <div class="q">Har pasienten kjent alvorlig allergi mot vaksiner eller komponenter?</div>
-        <div class="hint">Typisk anafylaksi mot tidligere dose eller innholdsstoff.</div>
-        <div class="btns">
-          <button class="yes" id="yes">Ja</button>
-          <button class="no" id="no">Nei</button>
-        </div>
-      `;
-      setProgress(2, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.allergy = true; renderResult(); };
-      document.getElementById('no').onclick  = () => { state.allergy = false; renderAge65(); };
-      push(renderAllergy);
-    }
-
-    function renderAge65(){
-      view.innerHTML = `
-        <div class="pill info">👤 Alder</div>
-        <div class="q">Er pasienten 65 år eller eldre?</div>
-        <div class="btns">
-          <button class="yes" id="yes">Ja</button>
-          <button class="no" id="no">Nei</button>
-        </div>
-      `;
-      setProgress(3, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.age65plus = true; renderAge75(); };
-      document.getElementById('no').onclick  = () => { state.age65plus = false; renderRisks(); };
-      push(renderAge65);
-    }
-
-    function renderAge75(){
-      view.innerHTML = `
-        <div class="pill info">👤 Alder</div>
-        <div class="q">Er pasienten 75 år eller eldre?</div>
-        <div class="btns">
-          <button class="yes" id="yes">Ja</button>
-          <button class="no" id="no">Nei</button>
-        </div>
-      `;
-      setProgress(4, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.age75plus = true; renderBorn1960(); };
-      document.getElementById('no').onclick  = () => { state.age75plus = false; renderBorn1960(); };
-      push(renderAge75);
-    }
-
-    function renderBorn1960(){
-      view.innerHTML = `
-        <div class="pill info">📅 Fødselsår</div>
-        <div class="q">Er pasienten født i <strong>1960</strong>?</div>
-        <div class="btns">
-          <button class="yes" id="yes">Ja</button>
-          <button class="no" id="no">Nei</button>
-        </div>
-      `;
-      setProgress(5, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.born1960 = true; renderPneumo12m(); };
-      document.getElementById('no').onclick  = () => { state.born1960 = false; renderResult(); };
-      push(renderBorn1960);
-    }
-
-    function renderPneumo12m(){
-      view.innerHTML = `
-        <div class="pill info">🦠 Pneumokokkvaksine (PPV23)</div>
-        <div class="q">Har pasienten fått Pneumovax (PPV23) de siste 12 månedene?</div>
-        <div class="hint">Dersom vaksinert &lt; 12 mnd siden, vent til det er gått minst 12 måneder.</div>
-        <div class="btns">
-          <button class="no" id="noRecent">Nei / ikke fått / &gt; 12 mnd</button>
-          <button class="yes" id="yesRecent">Ja, siste 12 mnd</button>
-        </div>
-        <div class="box" style="margin-top:10px">
-          <div class="hint" style="margin-bottom:6px;">Alternativt: Oppgi dato for siste Pneumovax-dose (valgfritt)</div>
-          <div class="row">
-            <input id="pneumoDate" type="date" aria-label="Dato for siste Pneumovax" />
-            <button class="ghost" id="calcBtn">Beregn</button>
-          </div>
-          <div id="calcOut" class="hint mono" style="margin-top:6px;"></div>
-        </div>
-      `;
-      setProgress(6, totalStepsAhead());
-      document.getElementById('noRecent').onclick  = () => { state.pneumovaxRecent = false; state.pneumovaxDate = null; renderResult(); };
-      document.getElementById('yesRecent').onclick = () => { state.pneumovaxRecent = true;  renderResult(); };
-
-      document.getElementById('calcBtn').onclick = () => {
-        const el = document.getElementById('pneumoDate');
-        const out = document.getElementById('calcOut');
-        if (!el.value) { out.textContent = 'Oppgi en gyldig dato.'; return; }
-        state.pneumovaxDate = el.value;
-        const {ok, months, daysToGo} = atLeast12MonthsInfo(el.value);
-        state.pneumovaxRecent = !ok; // hvis ikke 12 mnd, så "recent"
-        out.textContent = ok
-          ? `Det er ≥ 12 mnd (${months} mnd) siden siste dose. Vaksine kan gis.`
-          : `Det er < 12 mnd (${months} mnd). Vent ca. ${daysToGo} dager til 12 mnd er passert.`;
-      };
-      push(renderPneumo12m);
-    }
-
-    function renderRisks(){
-      const selected = new Set(state.risks);
-      view.innerHTML = `
-        <div class="pill info">🩺 Risikofaktorer</div>
-        <div class="q">Har pasienten en eller flere av følgende risikofaktorer?</div>
-        <div class="choices" id="choices"></div>
-        <div class="row">
-          <button class="ghost" id="noneBtn">Ingen av disse</button>
-          <button class="primary" id="contBtn">Fortsett</button>
-        </div>
-      `;
-      setProgress(4, totalStepsAhead());
-      const box = document.getElementById('choices');
-      RISK_OPTIONS.forEach(opt => {
-        const div = document.createElement('div');
-        div.className = 'choice' + (selected.has(opt.key) ? ' selected':'');
-        div.innerHTML = `<span>${opt.label}</span>`;
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        input.checked = selected.has(opt.key);
-        input.addEventListener('change', () => {
-          if (input.checked) { selected.add(opt.key); div.classList.add('selected'); }
-          else { selected.delete(opt.key); div.classList.remove('selected'); }
-        });
-        div.appendChild(input);
-        box.appendChild(div);
-      });
-
-      document.getElementById('noneBtn').onclick = () => { state.risks = []; renderResult(); };
-      document.getElementById('contBtn').onclick = () => { state.risks = Array.from(selected); renderResult(); };
-      push(renderRisks);
-    }
-
-    // --- HELPER-LOGIKK ---
-    function isAtLeast12Months(dateStr){
-      const d = new Date(dateStr);
-      if (isNaN(d)) return false;
-      const now = new Date();
-      const dd = new Date(d.getFullYear(), d.getMonth() + 12, d.getDate());
-      return dd <= now;
-    }
-    function atLeast12MonthsInfo(dateStr){
-      const d = new Date(dateStr);
-      if (isNaN(d)) return {ok:false, months:0, daysToGo:NaN};
-      const now = new Date();
-      let months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
-      if (now.getDate() < d.getDate()) months -= 1;
-      const ok = months >= 12;
-      // dager til 12 mnd:
-      const twelve = new Date(d.getFullYear(), d.getMonth() + 12, d.getDate());
-      const daysToGo = Math.max(0, Math.ceil((twelve - now) / (1000*60*60*24)));
-      return {ok, months: Math.max(0, months), daysToGo};
-    }
-    function yn(v){ return v===true ? 'Ja' : v===false ? 'Nei' : 'Ubesvart'; }
-    function listRiskLabels(keys){
-      if (!keys || keys.length===0) return 'Ingen';
-      return keys.map(k => RISK_LABEL[k] ?? k).join('; ');
-    }
-
-    // --- ANBEFALINGSLOGIKK ---
-    function computeRecommendation(){
-      const r = {
-        block: null, // 'fever' | 'allergy' | null
-        offer: [],   // liste over vaksiner tilbys i dag
-        consider: [],// liste vurderes
-        notes: []    // merknader
-      };
-
-      if (state.fever === true) {
-        r.block = 'fever';
-        r.notes.push('Utsett vaksinasjon til feberfri og klinisk bedret.');
-        return r;
-      }
-      if (state.allergy === true) {
-        r.block = 'allergy';
-        r.notes.push('Alvorlig vaksineallergi: ikke vaksiner i dag. Vurder legevurdering/allergiutredning.');
-        return r;
-      }
-
-      // ≥ 65 år
-      if (state.age65plus === true) {
-        // Influensa
-        r.offer.push('Influensavaksine');
-
-        // Covid-19
-        if (state.age75plus === true) {
-          r.offer.push('Covid-19-vaksine');
-          r.notes.push('≥ 75 år: bør ta covid-19-vaksine.');
-        } else {
-          r.consider.push('Covid-19-vaksine');
-          r.notes.push('65–74 år: friske kan selv vurdere covid-19-vaksine.');
-        }
-
-        // Pneumokokk – KUN født i 1960 og ikke nylig Pneumovax
-        if (state.born1960 === true) {
-          if (state.pneumovaxRecent === true) {
-            r.notes.push('Pneumokokkvaksine (PPV23): siste dose < 12 mnd. Vent til det er gått minst 12 måneder.');
-          } else if (state.pneumovaxRecent === false) {
-            r.offer.push('Pneumokokkvaksine (PPV23) – født i 1960');
-          } else {
-            r.notes.push('Vurder pneumokokkvaksine (PPV23) – født i 1960. Avklar om siste dose var for ≥ 12 mnd siden.');
-          }
-        }
-        return r;
-      }
-
-      // < 65 år
-      if (state.age65plus === false) {
-        const risks = state.risks || [];
-        const hasPreg1 = risks.includes('preg1');
-        const hasOtherRisk = risks.some(k => k !== 'preg1');
-
-        if (risks.includes('preg2') || (!hasPreg1 && hasOtherRisk) || (hasPreg1 && hasOtherRisk)) {
-          r.offer.push('Influensavaksine', 'Covid-19-vaksine');
-          if (hasPreg1 && hasOtherRisk) r.notes.push('Gravid 1. trimester + annen risikofaktor: vaksinasjon kan gis.');
-        } else if (hasPreg1 && !hasOtherRisk) {
-          r.notes.push('Gravid 1. trimester uten andre risikofaktorer: vaksine anbefales ikke nå.');
-        } else if (risks.length === 0) {
-          r.notes.push('Ingen vaksine i Nasjonalt vaksinasjonsprogram basert på opplysningene.');
-        }
-      }
-
-      return r;
-    }
-
-    // --- RESULTAT + OPPSUMMERING ---
-    function renderResult(){
-      const r = computeRecommendation();
-      let badge = '';
-      let headline = '';
-      let details = '';
-
-      if (r.block === 'fever') {
-        badge = `<span class="pill danger">🌡️ Utsett vaksinasjon i dag</span>`;
-        headline = 'Feber > 38°C';
-        details = '<li>Vaksinasjon utsettes til pasienten er feberfri.</li>';
-      } else if (r.block === 'allergy') {
-        badge = `<span class="pill warn">⚠️ Allergi – legevurdering</span>`;
-        headline = 'Kjent alvorlig vaksineallergi';
-        details = '<li>Ikke vaksiner i dag. Vurder henvisning/vaksinasjon under spesielle forhold.</li>';
-      } else {
-        badge = `<span class="pill ok">✅ Vaksinevurdering</span>`;
-        headline = 'Anbefaling';
-        const offer = r.offer.length ? `<li><strong>Tilby i dag:</strong> ${r.offer.join(' · ')}</li>` : '';
-        const consider = r.consider.length ? `<li><strong>Vurder:</strong> ${r.consider.join(' · ')}</li>` : '';
-        const notes = r.notes.length ? r.notes.map(n => `<li>${n}</li>`).join('') : '';
-        details = offer + consider + notes;
-        if (!offer && !consider && !notes) {
-          details = '<li>Ingen spesifikk anbefaling.</li>';
-        }
-      }
-
-      // Oppsummering for journal (print/kopi)
-      const risksPretty = listRiskLabels(state.risks);
-      const pneumoInfo = (() => {
-        if (state.born1960 !== true) return 'Ikke relevant (ikke født i 1960)';
-        if (state.pneumovaxDate) {
-          const {ok, months, daysToGo} = atLeast12MonthsInfo(state.pneumovaxDate);
-          return `Sist dose: ${state.pneumovaxDate} → ${ok ? '≥12 mnd' : `<12 mnd (≈${months} mnd, ${daysToGo} dager igjen)`}`;
-        }
-        if (state.pneumovaxRecent === true) return 'Sist dose < 12 mnd';
-        if (state.pneumovaxRecent === false) return 'Ikke gitt siste 12 mnd / >12 mnd';
-        return 'Uavklart';
-      })();
-
-      const summaryText = [
-        `Feber: ${yn(state.fever)}`,
-        `Alvorlig vaksineallergi: ${yn(state.allergy)}`,
-        `Alder ≥65: ${yn(state.age65plus)}`,
-        `Alder ≥75: ${yn(state.age75plus)}`,
-        `Født i 1960: ${yn(state.born1960)}`,
-        `Pneumovax siste 12 mnd: ${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei/≥12 mnd'}`,
-        `Dato siste Pneumovax (oppgitt): ${state.pneumovaxDate ?? '—'}`,
-        `Risikofaktorer (<65): ${risksPretty}`,
-        `Tilby: ${r.offer.join(', ') || '—'}`,
-        `Vurder: ${r.consider.join(', ') || '—'}`,
-        `Merknader: ${r.notes.join(' | ') || '—'}`
-      ].join('\n');
-
-      view.innerHTML = `
-        <div class="result">
-          ${badge}
-          <div class="q">${headline}</div>
-          <ul class="list">${details}</ul>
-
-          <div class="summary" id="summaryBox">
-            <h3>Oppsummering for journal</h3>
-            <table>
-              <tr><th>Feber i dag (&gt;38°C)</th><td>${yn(state.fever)}</td></tr>
-              <tr><th>Alvorlig vaksineallergi</th><td>${yn(state.allergy)}</td></tr>
-              <tr><th>Alder ≥65 år</th><td>${yn(state.age65plus)}</td></tr>
-              <tr><th>Alder ≥75 år</th><td>${yn(state.age75plus)}</td></tr>
-              <tr><th>Født i 1960</th><td>${yn(state.born1960)}</td></tr>
-              <tr><th>Pneumovax siste 12 mnd</th><td>${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei / ≥12 mnd'}</td></tr>
-              <tr><th>Siste Pneumovax-dato</th><td>${state.pneumovaxDate ?? '—'}</td></tr>
-              <tr><th>Vurdering av 12 mnd-regel</th><td>${pneumoInfo}</td></tr>
-              <tr><th>Risikofaktorer (<65 år)</th><td>${risksPretty}</td></tr>
-              <tr><th><strong>Tilby i dag</strong></th><td><strong>${r.offer.join(' · ') || '—'}</strong></td></tr>
-              <tr><th>Vurder</th><td>${r.consider.join(' · ') || '—'}</td></tr>
-              <tr><th>Merknader</th><td>${r.notes.join(' · ') || '—'}</td></tr>
-            </table>
-            <div class="muted" style="margin-top:6px;">Pneumokokkvaksine (PPV23) i denne veilederen: kun for født i 1960, og først når ≥ 12 mnd siden forrige Pneumovax-dose.</div>
-            <textarea id="summaryText" class="mono" style="width:100%; margin-top:8px; height:140px;">${summaryText}</textarea>
-          </div>
-
-          <div class="row">
-            <button id="restart" class="ghost">Ny vurdering</button>
-          </div>
-        </div>
-      `;
-      setProgress(7, 7);
-      document.getElementById('restart').onclick = resetAll;
-      push(renderResult);
-    }
-
-    function copySummaryToClipboard(){
-      const ta = document.getElementById('summaryText');
-      if (!ta) return;
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-      try {
-        document.execCommand('copy');
-      } catch(e) {}
-      window.getSelection().removeAllRanges();
-    }
-
-    function totalStepsAhead(){
-      // Omtrentlig fremdrift (for jevn bar)
-      // Intro, Feber, Allergi, 65, (75), (1960), (12mnd), Resultat
-      if (state.fever === true || state.allergy === true) return 7;
-      if (state.age65plus === null) return 7;
-      if (state.age65plus === true) return 7;
-      return 7; // <65: Intro, Feber, Allergi, 65, Risikofaktorer, Resultat
-    }
-
-    // Init
-    resetAll();
-  </script>
-</body>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
 </html>
