@@ -399,9 +399,28 @@
         input.checked = selected.has(opt.key);
         input.disabled = isDisabled;
         if (!isDisabled) {
-          input.addEventListener('change', () => {
-            if (input.checked) { selected.add(opt.key); div.classList.add('selected'); }
-            else { selected.delete(opt.key); div.classList.remove('selected'); }
+          // Håndter både change på input og click på div for bedre mobil-støtte
+          const updateSelection = () => {
+            if (input.checked) { 
+              selected.add(opt.key); 
+              div.classList.add('selected'); 
+            } else { 
+              selected.delete(opt.key); 
+              div.classList.remove('selected'); 
+            }
+          };
+          
+          const toggleSelection = () => {
+            input.checked = !input.checked;
+            updateSelection();
+          };
+          
+          input.addEventListener('change', updateSelection);
+          div.addEventListener('click', (e) => {
+            // Unngå dobbel-trigger hvis input allerede ble klikket
+            if (e.target !== input) {
+              toggleSelection();
+            }
           });
         }
         div.appendChild(input);
