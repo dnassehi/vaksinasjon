@@ -171,9 +171,9 @@
     const state = {
       fever: null,            // true/false
       allergy: null,          // true/false (alvorlig vaksineallergi)
-      age65plus: null,        // true/false
+      age65plus: null,        // true/false (inkl. fyller 65 i år)
       age75plus: null,        // true/false
-      born1960: null,         // true/false (eksakt 1960)
+      turns65ThisYear: null,  // true/false
       pneumovaxRecent: null,  // true/false/null (siste 12 mnd)
       pneumovaxDate: null,    // string YYYY-MM-DD
       risks: []               // array of risk keys
@@ -222,7 +222,7 @@
       state.allergy = null;
       state.age65plus = null;
       state.age75plus = null;
-      state.born1960 = null;
+      state.turns65ThisYear = null;
       state.pneumovaxRecent = null;
       state.pneumovaxDate = null;
       state.risks = [];
@@ -247,7 +247,7 @@
           <button class="primary" id="startBtn">Start ▶</button>
         </div>
       `;
-      setProgress(0, 7);
+      setProgress(0, 8);
       document.getElementById('startBtn').onclick = () => renderFever();
       push(renderIntro);
     }
@@ -296,20 +296,24 @@
       document.getElementById('yes').onclick = () => { 
         state.age75plus = true; 
         state.age65plus = true; // Hvis 75+, så er de også 65+
-        state.born1960 = false; // Hvis 75+ i 2024, kan de ikke være født i 1960
         renderResult(); 
       };
       document.getElementById('no').onclick  = () => { 
         state.age75plus = false; 
-        renderAge65(); 
+        renderTurns65ThisYear(); 
       };
       push(renderAge75);
     }
 
     function renderAge65(){
+      // Hopp over dette steget hvis vi allerede vet at pasienten blir 65 i år
+      if (state.turns65ThisYear === true) {
+        state.age65plus = true;
+        return renderRisks65plus();
+      }
       view.innerHTML = `
         <div class="pill info">👤 Alder</div>
-        <div class="q">Er pasienten 65 år eller eldre?</div>
+        <div class="q">Er pasienten eldre enn 65 år?</div>
         <div class="btns">
           <button class="yes" id="yes">Ja</button>
           <button class="no" id="no">Nei</button>
@@ -323,19 +327,26 @@
 
 
 
-    function renderBorn1960(){
+    function renderTurns65ThisYear(){
       view.innerHTML = `
         <div class="pill info">📅 Fødselsår</div>
-        <div class="q">Er pasienten født i <strong>1960</strong>?</div>
+        <div class="q">Har pasienten blitt eller blir 65 år i inneværende kalenderår?</div>
         <div class="btns">
           <button class="yes" id="yes">Ja</button>
           <button class="no" id="no">Nei</button>
         </div>
       `;
-      setProgress(6, totalStepsAhead());
-      document.getElementById('yes').onclick = () => { state.born1960 = true; renderPneumo12m(); };
-      document.getElementById('no').onclick  = () => { state.born1960 = false; renderResult(); };
-      push(renderBorn1960);
+      setProgress(4, totalStepsAhead());
+      document.getElementById('yes').onclick = () => { 
+        state.turns65ThisYear = true; 
+        state._afterPneumoNext = 'age65';
+        renderPneumo12m(); 
+      };
+      document.getElementById('no').onclick  = () => { 
+        state.turns65ThisYear = false; 
+        renderAge65(); 
+      };
+      push(renderTurns65ThisYear);
     }
 
     function renderPneumo12m(){
@@ -356,9 +367,19 @@
           <div id="calcOut" class="hint mono" style="margin-top:6px;"></div>
         </div>
       `;
-      setProgress(7, totalStepsAhead());
-      document.getElementById('noRecent').onclick  = () => { state.pneumovaxRecent = false; state.pneumovaxDate = null; renderResult(); };
-      document.getElementById('yesRecent').onclick = () => { state.pneumovaxRecent = true;  renderResult(); };
+      setProgress(6, totalStepsAhead());
+      const goNext = () => {
+        if (state._afterPneumoNext === 'age65') {
+          const nxt = renderAge65;
+          // rydde opp engangs-navigasjon
+          delete state._afterPneumoNext;
+          nxt();
+        } else {
+          renderResult();
+        }
+      };
+      document.getElementById('noRecent').onclick  = () => { state.pneumovaxRecent = false; state.pneumovaxDate = null; goNext(); };
+      document.getElementById('yesRecent').onclick = () => { state.pneumovaxRecent = true;  goNext(); };
 
       document.getElementById('calcBtn').onclick = () => {
         const el = document.getElementById('pneumoDate');
@@ -429,19 +450,11 @@
 
       document.getElementById('noneBtn').onclick = () => { 
         state.risks = []; 
-        if (state.age75plus === true) {
-          renderResult(); // 75+ kan ikke være født i 1960
-        } else {
-          renderBorn1960(); 
-        }
+        renderResult(); 
       };
       document.getElementById('contBtn').onclick = () => { 
         state.risks = Array.from(selected); 
-        if (state.age75plus === true) {
-          renderResult(); // 75+ kan ikke være født i 1960
-        } else {
-          renderBorn1960(); 
-        }
+        renderResult(); 
       };
       push(renderRisks65plus);
     }
@@ -562,17 +575,16 @@
           r.consider.push('Covid-19-vaksine');
           r.notes.push('65–74 år uten risikofaktorer: friske kan selv vurdere covid-19-vaksine.');
         }
-
-                 // Pneumokokk – KUN født i 1960 og ikke nylig pneumokokkvaksine
-         if (state.born1960 === true) {
-           if (state.pneumovaxRecent === true) {
-             r.notes.push('Pneumokokkvaksine (PKV13): siste dose < 12 mnd. Vent til det er gått minst 12 måneder.');
-           } else if (state.pneumovaxRecent === false) {
-             r.offer.push('Pneumokokkvaksine (PKV13) – født i 1960');
-           } else {
-             r.notes.push('Vurder pneumokokkvaksine (PKV13) – født i 1960. Avklar om siste dose var for ≥ 12 mnd siden.');
-           }
-         }
+        // Pneumokokk – tilby KUN dersom "blir 65 i år" er Ja og ≥12 mnd siden forrige dose
+        if (state.turns65ThisYear === true) {
+          if (state.pneumovaxRecent === true) {
+            r.notes.push('Pneumokokkvaksine (PKV20): siste dose < 12 mnd. Vent til det er gått minst 12 måneder.');
+          } else if (state.pneumovaxRecent === false) {
+            r.offer.push('Pneumokokkvaksine (PKV20)');
+          } else {
+            r.notes.push('Vurder pneumokokkvaksine (PKV20) – avklar om siste dose var for ≥ 12 mnd siden.');
+          }
+        }
         return r;
       }
 
@@ -598,6 +610,17 @@
             r.notes.push('Ingen vaksine i Nasjonalt vaksinasjonsprogram basert på opplysningene.');
           }
         }
+
+      // Pneumokokk – basert på om pasienten blir 65 år i inneværende år (for de som ikke er 65 ennå)
+      if (state.turns65ThisYear === true) {
+        if (state.pneumovaxRecent === true) {
+          r.notes.push('Pneumokokkvaksine (PKV20): siste dose < 12 mnd. Vent til det er gått minst 12 måneder.');
+        } else if (state.pneumovaxRecent === false) {
+          r.offer.push('Pneumokokkvaksine (PKV20)');
+        } else {
+          r.notes.push('Vurder pneumokokkvaksine (PKV20) – avklar om siste dose var for ≥ 12 mnd siden.');
+        }
+      }
 
       return r;
     }
@@ -632,7 +655,6 @@
       // Oppsummering for journal (print/kopi)
       const risksPretty = listRiskLabels(state.risks);
       const pneumoInfo = (() => {
-        if (state.born1960 !== true) return 'Ikke relevant (ikke født i 1960)';
         if (state.pneumovaxDate) {
           const {ok, months, daysToGo} = atLeast12MonthsInfo(state.pneumovaxDate);
           return `Sist dose: ${state.pneumovaxDate} → ${ok ? '≥12 mnd' : `<12 mnd (≈${months} mnd, ${daysToGo} dager igjen)`}`;
@@ -647,9 +669,9 @@
         `Alvorlig vaksineallergi: ${yn(state.allergy)}`,
         `Alder ≥65: ${yn(state.age65plus)}`,
         `Alder ≥75: ${yn(state.age75plus)}`,
-        `Født i 1960: ${yn(state.born1960)}`,
-                 `Pneumokokkvaksine siste 12 mnd: ${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei/≥12 mnd'}`,
-         `Dato siste pneumokokkvaksine (oppgitt): ${state.pneumovaxDate ?? '—'}`,
+        `Blir 65 år i år: ${yn(state.turns65ThisYear)}`,
+        `Pneumokokkvaksine siste 12 mnd: ${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei/≥12 mnd'}`,
+        `Dato siste pneumokokkvaksine (oppgitt): ${state.pneumovaxDate ?? '—'}`,
         `Risikofaktorer (<65): ${risksPretty}`,
         `Tilby: ${r.offer.join(', ') || '—'}`,
         `Vurder: ${r.consider.join(', ') || '—'}`,
@@ -669,8 +691,8 @@
               <tr><th>Alvorlig vaksineallergi</th><td>${yn(state.allergy)}</td></tr>
               <tr><th>Alder ≥65 år</th><td>${yn(state.age65plus)}</td></tr>
               <tr><th>Alder ≥75 år</th><td>${yn(state.age75plus)}</td></tr>
-              <tr><th>Født i 1960</th><td>${yn(state.born1960)}</td></tr>
-                             <tr><th>Pneumokokkvaksine siste 12 mnd</th><td>${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei / ≥12 mnd'}</td></tr>
+              <tr><th>Blir 65 år i år</th><td>${yn(state.turns65ThisYear)}</td></tr>
+              <tr><th>Pneumokokkvaksine siste 12 mnd</th><td>${state.pneumovaxRecent===null?'Ubesvart': state.pneumovaxRecent? 'Ja' : 'Nei / ≥12 mnd'}</td></tr>
                <tr><th>Siste pneumokokkvaksine-dato</th><td>${state.pneumovaxDate ?? '—'}</td></tr>
                <tr><th>Vurdering av 12 mnd-regel</th><td>${pneumoInfo}</td></tr>
               <tr><th>Risikofaktorer (<65 år)</th><td>${risksPretty}</td></tr>
@@ -678,7 +700,7 @@
               <tr><th>Vurder</th><td>${r.consider.join(' · ') || '—'}</td></tr>
               <tr><th>Merknader</th><td>${r.notes.join(' · ') || '—'}</td></tr>
             </table>
-                         <div class="muted" style="margin-top:6px;">Pneumokokkvaksine (PKV13/Prevenar 13) i denne veilederen: kun for født i 1960, og først når ≥ 12 mnd siden forrige pneumokokkvaksine-dose.</div>
+            <div class="muted" style="margin-top:6px;">Pneumokokkvaksine: PKV20 (Prevenar 20) tilbys dersom pasienten blir 65 samme kalenderår, forutsatt ≥ 12 måneder siden forrige pneumokokkvaksinedose.</div>
             <textarea id="summaryText" class="mono" style="width:100%; margin-top:8px; height:140px;">${summaryText}</textarea>
           </div>
 
@@ -687,7 +709,7 @@
           </div>
         </div>
       `;
-      setProgress(7, 7);
+      setProgress(8, 8);
       document.getElementById('restart').onclick = resetAll;
       push(renderResult);
     }
@@ -705,11 +727,8 @@
 
     function totalStepsAhead(){
       // Omtrentlig fremdrift (for jevn bar)
-      // Intro, Feber, Allergi, 65, (75), (1960), (12mnd), Resultat
-      if (state.fever === true || state.allergy === true) return 7;
-      if (state.age65plus === null) return 7;
-      if (state.age65plus === true) return 7;
-      return 7; // <65: Intro, Feber, Allergi, 65, Risikofaktorer, Resultat
+      // Intro, Feber, Allergi, 75, 65-i-år, 65, (12mnd), Risikofaktorer, Resultat
+      return 8;
     }
 
     // Init
